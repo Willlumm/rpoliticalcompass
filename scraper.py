@@ -8,21 +8,29 @@ params = {
     "subreddit":    "politicalcompass",
     "sort":         "desc",
     "sort_type":    "created_utc",
-    "after":        "1662142080",
-    "before":       "1662142200",
-    "size":         1
+    "after":        "1662073200",
+    "before":       "1662159600",
+    "size":         1000
 }
 
 response = requests.get(url, params=params)
 response = json.loads(response.text)
 for post in response["data"]:
-    for media_id, metadata in post["media_metadata"].items():
-        for p in metadata["p"]:
-            if p["x"] == 108:
-                im_url = p["u"]
-                im_url = re.sub("amp;", "", im_url)
-                im_response = requests.get(im_url, stream=True)
-                im_response.raw.decode_content = True
-                filename = f"data/{post['created_utc']}_{media_id}.png"
-                with open(filename, "wb") as file:
-                    shutil.copyfileobj(im_response.raw, file)
+    im_urls = []
+    if "media_metadata" in post:
+        for media_id, metadata in post["media_metadata"].items():
+            for p in metadata["p"]:
+                if p["x"] == 108:
+                    im_urls.append(p["u"])       
+    elif "preview" in post:
+        for im in post["preview"]["images"]:
+            for resolution in im["resolutions"]:
+                if resolution["width"] == 108:
+                    im_urls.append(resolution["url"])
+    for i, im_url in enumerate(im_urls):
+        im_url = re.sub("amp;", "", im_url)
+        im_response = requests.get(im_url, stream=True)
+        im_response.raw.decode_content = True
+        filename = f"data/{post['created_utc']}_{i}.png"
+        with open(filename, "wb") as file:
+            shutil.copyfileobj(im_response.raw, file)
