@@ -8,8 +8,7 @@ params = {
     "subreddit":    "politicalcompass",
     "sort":         "asc",
     "sort_type":    "created_utc",
-    "after":        1657077724,
-    # "before":       "1662159600",
+    "after":        0,
     "size":         1000
 }
 response = requests.get(url, params=params)
